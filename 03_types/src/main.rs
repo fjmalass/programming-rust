@@ -7,8 +7,6 @@ pub enum AllocType {
     Array,
 }
 
-
-
 #[derive(Debug, Hash, Eq, PartialEq, Clone)]
 pub struct Config {
     pub alloc_type: AllocType,
@@ -22,8 +20,8 @@ pub struct Config {
 /// The results are as follows: hardly any difference between the two vectors, but the array is
 /// much faster (from seconds to nano seconds)
 fn main() {
-    let iterations_vec: Vec<usize> = vec![10, 100, 500, 1_000];
-    let size: usize = 10_000_000;
+    let iterations_vec: Vec<usize> = vec![10, 50, 100, 200];
+    let size: usize = 1_000_000;
 
     let mut vect_array_timing: Vec<Config> = Vec::with_capacity(iterations_vec.len());
     {
@@ -35,7 +33,7 @@ fn main() {
                     v[i] = i;
                 }
             }
-            let elapsed= start.elapsed();
+            let elapsed = start.elapsed();
             let config = Config {
                 alloc_type: AllocType::Array,
                 iterations: *iterations,
@@ -88,5 +86,4 @@ fn main() {
         }
     }
     println!("Vector New: {:#?}", vect_new_timing);
-
 }
