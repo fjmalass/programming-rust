@@ -9,8 +9,8 @@ edition = "2021"
 members = [
     "traits",
     "html",
-    "01_concurrency",
-    "02_types",
+    "02_concurrency",
+    "03_types",
 ]
 
 
