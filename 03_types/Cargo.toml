@@ -1,17 +1,9 @@
 [package]
-name = "programming-rust"
+name = "types"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace]
-members = [
-    "traits",
-    "html",
-    "01_concurrency",
-    "02_types",
-]
-
-
 [dependencies]
+chrono = "0.4"
