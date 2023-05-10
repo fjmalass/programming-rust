@@ -12,6 +12,7 @@ members = [
     "02_concurrency",
     "03_types",
     "04_ownership",
+    "05_reference_safety",
 ]
 
 
