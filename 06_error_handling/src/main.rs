@@ -13,7 +13,7 @@ type ThreadSafeGenericResult<T> = Result<T, ThreadSafeGenericError>;
 
 
 #[derive(Debug, Error)]
-#[error("{message} on line {line_number}: {line}")]
+#[error("'{message}' on line {line_number}: '{line}'")]
 pub struct ParseLineError{
     message: String,
     line: String,
@@ -27,9 +27,9 @@ fn read_numbers(file: &mut dyn BufRead) -> GenericResult<Vec<i32>> {
         let line = line_result?;
         match line.parse::<i32>() {
             Ok(number) => numbers.push(number),
-            Err(_) => {
+            Err(parse_error) => {
                 return Err(Box::new(ParseLineError {
-                    message: "'Bad number'".to_string(),
+                    message: parse_error.to_string(),
                     line,
                     line_number: line_index + 1,
                 }));
