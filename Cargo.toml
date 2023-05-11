@@ -13,7 +13,7 @@ members = [
     "03_types",
     "04_ownership",
     "05_reference_safety",
+    "06_error_handling",
 ]
-
 
 [dependencies]

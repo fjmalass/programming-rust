@@ -139,8 +139,14 @@ fn write_image(
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() != 5 {
-        eprintln!("{}: mandelbrot FILE PIXELS UPPERLEFT LOWERRIGHT", "Usage".red().bold());
-        eprintln!("{}: mandel.png 1000x750 -1.20,0.35 -1,0.20", "Example".red().bold());
+        eprintln!(
+            "{}: mandelbrot FILE PIXELS UPPERLEFT LOWERRIGHT",
+            "Usage".red().bold()
+        );
+        eprintln!(
+            "{}: mandel.png 1000x750 -1.20,0.35 -1,0.20",
+            "Example".red().bold()
+        );
         std::process::exit(1);
     }
     let bounds = parse_pair(&args[2], 'x').expect("error parsing image dimensions");
