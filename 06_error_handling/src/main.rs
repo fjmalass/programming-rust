@@ -43,7 +43,7 @@ fn main() {
     let mut reader = BufReader::new(stdin);
     let numbers = read_numbers(&mut reader);
     match numbers {
-        Ok(numbers) => println!("{:?}", numbers),
+        Ok(numbers) => println!("Numbers: {:?}", numbers),
         Err(err) => {
             if let Some(io_error) = err.downcast_ref::<io::Error>() {
                 eprintln!("{}: {}", "IO Error".yellow().underline(), io_error);
