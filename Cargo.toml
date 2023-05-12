@@ -14,6 +14,7 @@ members = [
     "04_ownership",
     "05_reference_safety",
     "06_error_handling",
+    "09_structs",
 ]
 
 [dependencies]
