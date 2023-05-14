@@ -7,7 +7,6 @@ edition = "2021"
 
 [workspace]
 members = [
-    "traits",
     "html",
     "02_concurrency",
     "03_types",
@@ -16,6 +15,8 @@ members = [
     "06_error_handling",
     "09_structs",
     "10_enums",
+    "11_traits",
+    "12_overloading",
 ]
 
 [dependencies]

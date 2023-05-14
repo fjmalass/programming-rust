@@ -1,7 +1,6 @@
+use std::borrow::Borrow;
 use std::io::Write;
 use std::rc::Rc;
-use std::borrow::Borrow;
-
 
 // Generics better than trait objects
 fn say_hello<W: Write>(out: &mut W) -> std::io::Result<()> {
@@ -13,16 +12,11 @@ fn main() {
     println!("Traits - Generics!");
     let mut buf: Vec<u8> = vec![];
     let mut writer: &mut dyn Write = &mut buf;
-    _ = say_hello(&mut writer).unwrap();
-    println!("buf: {:?}", buf.len());
-
+    let val = say_hello(&mut writer);
+    println!("buf: {:?}: val: {:?}", buf.len(), val);
 
     // using fat pointers (with vtable)
     let mut w: Box<&mut dyn Write> = Box::new(&mut buf);
-    _ = say_hello(&mut w).unwrap();
-    println!("buf with Fat pointer: {:?}", buf.len());
-
-
-
-
+    let out  = say_hello(&mut w);
+    println!("out: {:?}", out);
 }
