@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Default)]
-struct Image<P>  {
+struct Image<P> {
     pixels: Vec<P>,
     width: usize,
     height: usize,
@@ -14,6 +14,8 @@ impl<P: Default + Copy> Image<P> {
         }
     }
 }
+// Returns a slice of the pixels in the row
+// so we can access the individual pixels in the row
 impl<P> std::ops::Index<usize> for Image<P> {
     type Output = [P];
     fn index(&self, row: usize) -> &[P] {
@@ -22,6 +24,8 @@ impl<P> std::ops::Index<usize> for Image<P> {
     }
 }
 
+// Returns a slice of the pixels in the row
+// so we can access the individual pixels in the row
 impl<P> std::ops::IndexMut<usize> for Image<P> {
     fn index_mut(&mut self, row: usize) -> &mut [P] {
         let start = row * self.width;
@@ -42,6 +46,9 @@ fn main() {
     image[0][8] = 9;
     image[0][9] = 10;
     let row: usize = 0;
-    println!("row: {}, {:?}",row,  &image[row]);
-
+    let col: usize = 10;
+    println!("row: {}, val: {:?}", row, &image[row]);
+    println!("row: {}, col: {}, val: {:?}", row, col, &image[row][col]);
+    let row: usize = 2;
+    println!("row: {}, col: {}, val: {:?}", row, col, &image[row][col]);
 }

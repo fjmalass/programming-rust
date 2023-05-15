@@ -17,6 +17,7 @@ members = [
     "10_enums",
     "11_traits",
     "12_overloading",
+    "13_utility_traits",
 ]
 
 [dependencies]
