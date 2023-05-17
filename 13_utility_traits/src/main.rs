@@ -1,6 +1,10 @@
 use colored::*;
-use std::rc::Rc;
+use std::borrow::Cow;
+use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use std::path::PathBuf;
+use std::rc::Rc;
+use std::io::{ ErrorKind, Error};
 
 #[derive(Debug)]
 struct Appelation {
@@ -35,6 +39,44 @@ impl<T> Deref for Selector<T> {
 impl<T> DerefMut for Selector<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.values[self.current]
+    }
+}
+
+/// DEFAULT
+#[derive(Debug)]
+pub struct Params {
+    pub name: String,
+    pub is_active: bool,
+    pub width: u32,
+    pub height: u32,
+    pub depth: u32,
+}
+
+impl Default for Params {
+    fn default() -> Self {
+        Self {
+            name: "default".to_string(),
+            is_active: true,
+            width: 640,
+            height: 480,
+            depth: 1,
+        }
+    }
+}
+
+// by default
+#[derive(Debug, Default)]
+pub struct ValuesZeroByDefault {
+    pub a: u32,
+    pub b: u32,
+    pub c: u32,
+}
+
+// Using cow (borrowed  vs. owned)
+fn describe(error: &Error) -> Cow<'static, str> {
+    match error.kind() {
+        ErrorKind::NotFound  => format!("file not found: {:?}", error.get_ref()).into(), // Owned
+        _ => "unknown error".into(),
     }
 }
 
@@ -139,22 +181,120 @@ fn main() {
         println!("*a = {:?}", *a);
     }
     {
-        let mut s = Selector{current:0,values : vec!["one".to_string(),"two".to_string()]};
+        let mut s = Selector {
+            current: 0,
+            values: vec!["one".to_string(), "two".to_string()],
+        };
         println!("s = {:?}, deref: {:?}", s, *s);
         s.current = 1;
-        println!("s = {:?}, {:p}, values: {:p},  deref: {:?}", s, &s, &s.values, *s);
+        println!(
+            "s = {:?}, {:p}, values: {:p},  deref: {:?}",
+            s, &s, &s.values, *s
+        );
         println!("s = {}", &(*s)[1..]);
         *s = "three".to_string();
-        println!("s = {:?}, {:p}, values: {:p},  deref: {:?}", s, &s, &s.values, *s);
+        println!(
+            "s = {:?}, {:p}, values: {:p},  deref: {:?}",
+            s, &s, &s.values, *s
+        );
         s.current = 10;
         // panick as only 2 values
         // println!("s = {:?}, {:p}, values: {:p},  deref: {:?}", s, &s, &s.values, *s);
     }
 
     println!("{}", "--- 05. Default ---".green());
-    println!("{}", "--- 06. AsRef ---".green());
-    println!("{}", "--- 07. Borrow ---".green());
+    {
+        let p = Params::default();
+        println!("p = {:?}", p);
+    }
+    {
+        println!(
+            "{}",
+            "- Default with only 1 changed using ..default)".yellow()
+        );
+        let p = Params {
+            name: "Width: 1080".to_string(),
+            width: 1080,
+            ..Params::default()
+        };
+        println!("p = {:?}", p);
+    }
+    {
+        println!("{}", "Default with box".yellow());
+        let p = Box::<Params>::default();
+        println!("p = {:?}, ptr: {:p} ", p, p);
+    }
+
+    {
+        let z = ValuesZeroByDefault::default();
+        println!("z = {:?}", z);
+    }
+
+    println!("{}", "--- 06. AsRef / AsRefMut  ---".green());
+    println!(
+        "{}",
+        "- Used for functions for more flexible argument types".yellow()
+    );
+    println!(
+        "{}",
+        "- e.g., `fn read_file<T: AsRef<Path>>(path: T) -> Result<String>` -".yellow()
+    );
+
+    println!("{}", "--- 07. Borrow / BorrowMut ---".green());
+    println!(
+        "{}",
+        "- More restrictive for Hash Tables and Trees than AsRef (particularly with String)"
+            .yellow()
+    );
+    let mut hashtable = HashMap::<String, usize>::new();
+    hashtable.insert("one".to_string(), 1);
+    hashtable.insert("two".to_string(), 2);
+    println!("Hashtable: {:?}", hashtable);
+    let key = "one".to_string();
+    println!("key: {:?}, Hash[key]: {}", key, hashtable[&key]);
+    println!("key as string litterl:  Hash[key]: {}", hashtable["two"]);
+
     println!("{}", "--- 08. From/Into ---".green());
+    println!(
+        "{}",
+        "- From/Into are more expensive than  AsRef/AsMut they often do allocation/ data checking-"
+            .yellow()
+    );
+    println!(
+        "{}",
+        "- From/Into should not be implemented if err, like f64 into f32, Use try_into -".yellow()
+    );
+
     println!("{}", "--- 09. TryFrom/TryInto ---".green());
+    println!("{}", "- Returns Resut, like f64 -> f32 -".yellow());
+    {
+        let large: usize = 2_000_000_000_000;
+        let missed: i16 = large.try_into().unwrap_or_else(|_| {
+            if large >= 0 {
+                std::i16::MAX
+            } else {
+                std::i16::MIN
+            }
+        });
+        println!("large: {}, missed: {}", large, missed);
+    }
+
     println!("{}", "--- 10. ToOwned ---".green());
+    println!(
+        "{}",
+        "- ToOwned is like Clone but can return a Path or String from a reference -".yellow()
+    );
+    let s = "hello".to_string();
+    let p = std::path::Path::new("more").to_owned();
+    println!(
+        "{}",
+        "--- 11. Borrow and ToOwned using Copy on Write (CoW) ---".green()
+    );
+    println!(
+        "{}",
+        "- CoW is a smart pointer that only copies when needed -".yellow()
+    );
+
+
 }
+
