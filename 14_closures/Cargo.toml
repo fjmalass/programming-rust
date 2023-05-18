@@ -1,5 +1,5 @@
 [package]
-name = "utility_traits"
+name = "closures"
 version = "0.1.0"
 edition = "2021"
 

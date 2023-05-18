@@ -18,6 +18,7 @@ members = [
     "11_traits",
     "12_overloading",
     "13_utility_traits",
+    "14_closures",
 ]
 
 [dependencies]
