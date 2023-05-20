@@ -4,7 +4,9 @@ use image::ImageEncoder;
 use num::Complex;
 use std::env;
 use std::fs::File;
+use std::iter::successors;
 use std::str::FromStr;
+use std::time::Instant;
 use text_colorizer::*;
 
 /// Parse a pair of numbers separated by a character as a pair.
@@ -87,7 +89,6 @@ fn escape_time(c: Complex<f64>, limit: u32) -> Option<u32> {
             return Some(i);
         }
     }
-
     None
 }
 
@@ -95,14 +96,71 @@ fn escape_time(c: Complex<f64>, limit: u32) -> Option<u32> {
 fn test_escape_time() {
     {
         let c = Complex::<f64> { re: 2., im: 0.0 };
-        assert_eq!(escape_time(c, 10), Some(1));
+        let start = Instant::now();
+        let i = escape_time(c, 10);
+        println!("Escape Time elapsed: {:?}", start.elapsed().as_nanos());
+        assert_eq!(i, Some(1));
     }
     {
         let c = Complex::<f64> {
             re: 0.00011,
             im: 0.0,
         };
-        assert_eq!(escape_time(c, 10), None);
+        let start = Instant::now();
+        let i = escape_time(c, 10);
+        println!("Escape Time elapsed: {:?}", start.elapsed().as_nanos());
+        assert_eq!(i, None);
+    }
+}
+
+// Using iterators (base on chapter 15)
+// Slower than for loop by 30% (but same spped as filter)
+fn escape_time_iter_other(c: Complex<f64>, limit: u32) -> Option<u32> {
+    let zero = Complex::<f64> { re: 0.0, im: 0.0 };
+    successors(Some(zero), |z| Some(z * z + c))
+        .take(limit as usize)
+        .position(|z| z.norm_sqr() > 4.0)
+        .map(|i| (i - 1) as u32)
+}
+
+#[test]
+fn test_escape_time_iter_other() {
+    {
+        let c = Complex::<f64> { re: 2., im: 0.0 };
+        assert_eq!(escape_time_iter_other(c, 10), Some(1));
+    }
+    {
+        let c = Complex::<f64> {
+            re: 0.00011,
+            im: 0.0,
+        };
+        assert_eq!(escape_time_iter_other(c, 10), None);
+    }
+}
+
+// Using iterators (base on chapter 15)
+// Slower than for loop by 30% (but same speed as position iterator)
+fn escape_time_iter(c: Complex<f64>, limit: u32) -> Option<u32> {
+    let zero = Complex::<f64> { re: 0.0, im: 0.0 };
+    successors(Some(zero), |z| Some(z * z + c))
+        .take(limit as usize)
+        .enumerate()
+        .find(|(_, z)| z.norm_sqr() > 4.0)
+        .map(|(i, _z)| (i - 1) as u32)
+}
+
+#[test]
+fn test_escape_time_iter() {
+    {
+        let c = Complex::<f64> { re: 2., im: 0.0 };
+        assert_eq!(escape_time_iter(c, 10), Some(1));
+    }
+    {
+        let c = Complex::<f64> {
+            re: 0.00011,
+            im: 0.0,
+        };
+        assert_eq!(escape_time_iter(c, 10), None);
     }
 }
 
@@ -112,15 +170,19 @@ fn render(
     upper_left: Complex<f64>,
     lower_right: Complex<f64>,
 ) {
+    let start = Instant::now();
     for row in 0..bounds.1 {
         for column in 0..bounds.0 {
             let point = pixel_to_point(bounds, (column, row), upper_left, lower_right);
             pixels[row * bounds.0 + column] = match escape_time(point, 255) {
+                // pixels[row * bounds.0 + column] = match escape_time_iter(point, 255) {
+                // pixels[row * bounds.0 + column] = match escape_time_iter_other(point, 255) {
                 None => 0,
                 Some(count) => 255 - count as u8,
             };
         }
     }
+    println!("Render elapsed: {:?}ms", start.elapsed().as_millis());
 }
 
 fn write_image(
