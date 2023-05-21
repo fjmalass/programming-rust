@@ -1,5 +1,7 @@
 use colored::*;
+use std::collections::BTreeMap;
 use std::iter::successors;
+use std::str::FromStr;
 use std::time::Instant;
 
 pub fn fibonacci_mut(state: &mut (u64, u64)) -> impl Iterator<Item = u64> + '_ {
@@ -17,6 +19,26 @@ pub fn fibonacci() -> impl Iterator<Item = u64> {
         state = (state.1, next);
         Some(next)
     })
+}
+
+// Manual Iterator
+#[derive(Debug)]
+struct MyRange {
+    start: usize,
+    end: usize,
+}
+
+impl Iterator for MyRange {
+    type Item = usize;
+    fn next(&mut self) -> Option<usize> {
+        if self.start >= self.end {
+            None
+        } else {
+            let result = Some(self.start);
+            self.start += 1;
+            result
+        }
+    }
 }
 
 fn main() {
@@ -137,7 +159,12 @@ fn main() {
     let start = Instant::now();
     let mut state = (0, 1);
     let f = fibonacci_mut(&mut state).take(10).collect::<Vec<_>>();
-    println!("fibonacci_mut: {:?}, state: {:?}, in {} us", f, state, start.elapsed().as_micros());
+    println!(
+        "fibonacci_mut: {:?}, state: {:?}, in {} us",
+        f,
+        state,
+        start.elapsed().as_micros()
+    );
 
     // DRAIN
     println!("{}", "-- DRAIN --".green().bold());
@@ -173,4 +200,112 @@ fn main() {
         v,
         start.elapsed().as_nanos()
     );
+
+    // filter_map
+    println!("{}", "-- FILTER  MAP --".green().bold());
+    println!(
+        "{}",
+        "Using mapping to determine what needs to be filtered".yellow()
+    );
+    let text = "1\nfrond .25 0289\n 3.141231 est\n".to_string();
+
+    // use ok() converts a result to an option
+    let start = Instant::now();
+    let number_it = text
+        .split_whitespace()
+        .filter_map(|s| f64::from_str(s).ok());
+    let numbers = number_it.collect::<Vec<_>>();
+    println!(
+        "numbers with filter_map: {:?} in {} ns",
+        numbers,
+        start.elapsed().as_nanos()
+    );
+    //
+    // Naive and long way to do it but similar timing as the difference is based on when you call
+    // the function
+    let start = Instant::now();
+    let number_it = text
+        .split_whitespace()
+        .map(|s| f64::from_str(s))
+        .filter(|r| r.is_ok())
+        .map(|r| r.unwrap());
+
+    let numbers = number_it.collect::<Vec<_>>();
+    println!(
+        "numbers with separate:   {:?} in {} ns",
+        numbers,
+        start.elapsed().as_nanos()
+    );
+
+    //  flat_map
+    println!("{}", "-- FLAT  MAP --".green().bold());
+    let mut parks = BTreeMap::new();
+    parks.insert("Portland", vec!["Mt. Tabor Park", "Forest Park"]);
+    parks.insert("Kyoto", vec!["Tadasu-o-Mort Forest", "Maruyama Koen"]);
+    parks.insert("Raleigh", vec!["Umpstead Park", "Lake Johnson Preserve"]);
+    let all_parks = parks.values().flatten().collect::<Vec<_>>();
+    println!("all_parks: {}: {:?}", all_parks.len(), all_parks);
+
+    let all_parks_caps = all_parks
+        .iter()
+        .map(|s| s.to_uppercase())
+        .collect::<Vec<_>>();
+    println!("all_parks caps  {:?}, ", all_parks_caps);
+
+    // Iterator BY_REF
+    println!("{}", "-- BY_REF --".green().bold());
+    println!(
+        "{}",
+        "To be able to use the iterator and resume at the position it left off".yellow()
+    );
+    let message = "To: jimb\r\n\
+                   From: superego <junk@gmail.com>\r\n\
+                   \r\n\
+                   Oooh this is the body\r\n\
+                   Get some donuts on the way home.\r\n";
+    let mut lines = message.lines();
+    let headers_iter = lines.by_ref().take_while(|line| !line.is_empty());
+    let headers = headers_iter.collect::<Vec<_>>();
+    println!("headers: {:?}", headers);
+    let body = lines.collect::<Vec<_>>();
+    println!("body: {:?}", body);
+
+    // Cycle
+    println!("{}", "-- CYCLE --".green().bold());
+    let colors = ["red", "green", "blue"].iter().cycle();
+    let now_colors = colors.take(10).collect::<Vec<_>>();
+    println!("colors: {:?}", now_colors);
+
+    // Position
+    println!("{}", "-- POSITION --".green().bold());
+    let text = "Xerxes".to_string();
+    let mut text_iter = text.chars();
+    let p = text_iter.position(|c| c == 'e');
+    println!("p for 'e': {:?}", p);
+    let p = text_iter.position(|c| c == 'e');
+    println!("p for the next 'e' (relative): {:?}", p);
+    let p = text_iter.position(|c| c == 'e');
+    println!("p for the next 'e' (relative): {:?}", p);
+
+    // fold
+    println!("{}", "-- FOLD --".green().bold());
+    println!(
+        "{}",
+        "fold accumulates values, used for sums, joins etc. ".yellow()
+    );
+    let a = ["one", "two", "three"];
+    let s = a.iter().fold(String::new(), |acc, &s| acc + s + ", ");
+    println!("s: {}", s);
+
+    let a = [1, 2, 3];
+    let sum = a.iter().fold(0, |acc, &n| acc + n);
+    println!("sum: {:?} = {}", a, sum);
+
+    // Manual iterators
+    println!("{}", "-- Manually Generated Iterators --".green().bold());
+    let mut m_iter = MyRange { start: 0, end: 10 };
+    println!("m_iter: {:?}", m_iter);
+    println!("m_iter.next(): {:?}, {:?}", m_iter.next(), m_iter);
+    m_iter.start = 11;
+    println!("m_iter.next(): {:?}, {:?}", m_iter.next(), m_iter);
 }
