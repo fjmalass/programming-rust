@@ -101,20 +101,20 @@ fn main() {
     }
 
     // Successors
-    println!("{}", "-- Successors --".green().bold());
+    println!("{}", "-- SUCCESSORS --".green().bold());
     let start = Instant::now();
     let _v = successors(Some(0), |i| Some(i + 1))
         .take(10_000)
         .collect::<Vec<i64>>();
     println!(
-        "Vector Successor  generated in {} μs",
+        "Vector SUCCESSOR generated in {} μs",
         start.elapsed().as_micros()
     );
 
     let start = Instant::now();
     let _v: Vec<i64> = (0..10_000).collect();
     println!(
-        "Vector collect  generated in {} μs",
+        "Vector COLLECT generated in {} μs",
         start.elapsed().as_micros()
     );
 
@@ -124,17 +124,53 @@ fn main() {
         a[i] = i as i64;
     }
     println!(
-        "Vector array  generated in {} μs",
+        "Vector ARRAY  generated in {} μs",
         start.elapsed().as_micros()
     );
 
     // from_fn
-    println!("{}", "-- From_fn --".green().bold());
+    println!("{}", "-- FROM_FN --".green().bold());
+    let start = Instant::now();
     let f = fibonacci().take(10).collect::<Vec<_>>();
-    println!("fibonnaci:     {:?}", f);
+    println!("fibonnaci:     {:?} in {:?} us", f, start.elapsed());
 
+    let start = Instant::now();
     let mut state = (0, 1);
     let f = fibonacci_mut(&mut state).take(10).collect::<Vec<_>>();
-    println!("fibonacci_mut: {:?}, state: {:?}", f, state);
+    println!("fibonacci_mut: {:?}, state: {:?}, in {} us", f, state, start.elapsed().as_micros());
 
+    // DRAIN
+    println!("{}", "-- DRAIN --".green().bold());
+    let mut outer = "Earth".to_string();
+    let inner = String::from_iter(outer.drain(1..4));
+    println!("outer: {}, inner: {}", outer, inner);
+
+    // Map FIlter
+    println!("{}", "-- MAP FILTER --".green().bold());
+    println!(
+        "{}",
+        "we need to dereference the `&&s` argument in the filter".yellow()
+    );
+    let text = "   plenty\n of    \n  spaces  \n everywhere".to_string();
+    let start = Instant::now();
+    let v = text
+        .lines()
+        .map(str::trim)
+        .filter(|s| *s != "of") // argument is in facet &&s so we need to dereference it;
+        .collect::<Vec<_>>();
+    println!("v: {:?}, in {:?} ns", v, start.elapsed().as_nanos());
+
+    // for loop
+    let mut v: Vec<&str> = vec![];
+    for line in text.lines() {
+        let line = line.trim();
+        if line != "of" {
+            v.push(line)
+        }
+    }
+    println!(
+        "For loop v: {:?}, in {:?} ns",
+        v,
+        start.elapsed().as_nanos()
+    );
 }
