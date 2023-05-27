@@ -20,6 +20,7 @@ members = [
     "13_utility_traits",
     "14_closures",
     "15_iterators",
+    "16_collections",
 ]
 
 [dependencies]
