@@ -209,6 +209,7 @@ fn main() {
             "{}: mandel.png 1000x750 -1.20,0.35 -1,0.20",
             "Example".red().bold()
         );
+        println!("Checkout chapter 19 for concurrency using rayon");
         std::process::exit(1);
     }
     let bounds = parse_pair(&args[2], 'x').expect("error parsing image dimensions");
