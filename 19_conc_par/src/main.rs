@@ -201,6 +201,9 @@ fn main() {
         // check that error is encountered
         // r1?;
 
-        println!("{}", result.expect("BAD MERGE").yellow());
+        let result = result.unwrap();
+        println!("Result: {}", result.len());
+        println!("Starting with {}", result.lines().next().unwrap().yellow());
+        println!("Ending   with {}", result.lines().last().unwrap().yellow());
     }
 }
